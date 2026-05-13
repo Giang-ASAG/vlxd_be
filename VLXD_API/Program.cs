@@ -19,7 +19,9 @@ namespace VLXD_API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 
+            builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +35,7 @@ namespace VLXD_API
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("DefaultConnection is missing in appsettings.json.");
 
-                options.UseMySql(connectionString, ServerVersion.Parse("8.0.45-mysql"));
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
             });
 
             // Cấu hình CORS
@@ -73,17 +75,14 @@ namespace VLXD_API
 
             app.UseCors("AllowAll");
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
 
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseHttpsRedirection();
-            }
+            //if (!app.Environment.IsDevelopment())
+            //{
+            //    app.UseHttpsRedirection();
+            //}
 
 
 
