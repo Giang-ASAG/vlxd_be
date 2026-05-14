@@ -121,9 +121,9 @@ public class DonHangsController : ControllerBase
                     {
                         MaDonHang = donHang.MaDonHang,
                         MaKhoXuat = 1,
-                        MaNguoiXuat = 1,
-                         NgayXuat = DateTime.Now,
-                         TrangThaiXuat = "da_xuat_kho"
+                        MaNguoiXuat = request.DonHang.MaNguoiTao,
+                        NgayXuat = DateTime.Now,
+                        TrangThaiXuat = "da_xuat_kho"
                     };
                     _context.PhieuXuatKhos.Add(_mapper.Map<PhieuXuatKho>(xuatKhoDto));
                     //await _context.SaveChangesAsync();

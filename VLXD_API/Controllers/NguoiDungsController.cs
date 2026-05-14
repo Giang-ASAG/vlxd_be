@@ -54,6 +54,7 @@ public class NguoiDungsController : ControllerBase
             // Hash the password before saving
             entity.MatKhauHash = BamMatKhauHandler.PasswordHash(dto.MatKhauHash);
         }
+        entity.VaiTro = "admin";
         _context.NguoiDungs.Add(entity);
         await _context.SaveChangesAsync();
 

@@ -23,33 +23,77 @@ public class SanPhamsController : ControllerBase
         _mapper = mapper;
     }
 
+    //[HttpGet]
+    //public async Task<ActionResult<ApiResponse<IEnumerable<SanPhamTonKhoDto>>>> GetAll()
+    //{
+    //    // Nếu bạn muốn: TonKhoHienTai = SUM(SoLuongTon) theo MaSanPham,
+    //    // và SP nào không có tồn -> 0.
+    //    var query =
+    //        from sp in _context.SanPhams.AsNoTracking()
+    //        join tk in
+    //            (from x in _context.TonKhoChiTiets.AsNoTracking()
+    //             group x by x.MaSanPham into g
+    //             select new
+    //             {
+    //                 MaSanPham = g.Key,
+    //                 SoLuongTon = g.Sum(y => y.SoLuongTon)
+    //             })
+    //        on sp.MaSanPham equals tk.MaSanPham into tkJoin
+    //        from tk in tkJoin.DefaultIfEmpty()
+    //        select new SanPhamTonKhoDto
+    //        {
+    //            // map các field bạn có trong dto
+    //            MaSanPham = sp.MaSanPham,
+    //            // ví dụ (bạn thay bằng field thật):
+    //            TenSanPham = sp.TenSanPham,
+    //            DonViChinh = sp.DonViChinh,
+    //            GiaBanLe = sp.GiaBanLe,
+    //            GiaNhapGanNhat = sp.GiaNhapGanNhat,
+    //            GiaSauThue = sp.GiaSauThue,
+    //            MaDanhMuc = sp.MaDanhMuc,
+    //            MaNccMacDinh = sp.MaNccMacDinh,
+    //            MaSku = sp.MaSku,
+    //            NgayTao = sp.NgayTao,
+    //            SoLuong = sp.SoLuong,
+    //            Thue = sp.Thue,
+    //            TonKhoToiDa = sp.TonKhoToiDa,
+    //            TonKhoToiThieu = sp.TonKhoToiThieu,
+    //            // ...
+
+    //            TonKhoHienTai = tk == null ? 0 : Convert.ToInt32(tk.SoLuongTon ?? 0)
+    //        };
+
+    //    var dto = await query.ToListAsync();
+
+    //    return Ok(ApiResponse<IEnumerable<SanPhamTonKhoDto>>.Ok(dto));
+    //}
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<SanPhamTonKhoDto>>>> GetAll()
     {
-        var entities = await _context.SanPhams
+        var dto = await _context.SanPhams
             .AsNoTracking()
-            .ToListAsync();
-
-        // Query stock details once
-        var tonKhoBySanPham = await _context.TonKhoChiTiets
-            .AsNoTracking()
-            .GroupBy(x => x.MaSanPham)
-            .Select(g => new
+            .Select(sp => new SanPhamTonKhoDto
             {
-                MaSanPham = g.Key,
-                SoLuongTon = g.Sum(x => x.SoLuongTon)
+                MaSanPham = sp.MaSanPham,
+                TenSanPham = sp.TenSanPham,
+                DonViChinh = sp.DonViChinh,
+                GiaBanLe = sp.GiaBanLe,
+                GiaNhapGanNhat = sp.GiaNhapGanNhat,
+                GiaSauThue = sp.GiaSauThue,
+                MaDanhMuc = sp.MaDanhMuc,
+                MaNccMacDinh = sp.MaNccMacDinh,
+                MaSku = sp.MaSku,
+                NgayTao = sp.NgayTao,
+                SoLuong = sp.SoLuong,
+                Thue = sp.Thue,
+                TonKhoToiDa = sp.TonKhoToiDa,
+                TonKhoToiThieu = sp.TonKhoToiThieu,
+                // ... các field khác
+                TonKhoHienTai = (int)(_context.TonKhoChiTiets
+                    .Where(t => t.MaSanPham == sp.MaSanPham)
+                    .Sum(t => (decimal?)t.SoLuongTon) ?? 0)
             })
-            .ToDictionaryAsync(x => x.MaSanPham, x => x.SoLuongTon);
-
-        var dto = _mapper.Map<List<SanPhamTonKhoDto>>(entities);
-
-        foreach (var item in dto)
-        {
-            if (tonKhoBySanPham.TryGetValue(item.MaSanPham, out var soLuongTon))
-                item.TonKhoHienTai = (int)soLuongTon;
-            else
-                item.TonKhoHienTai = 0; // or whatever default you want
-        }
+            .ToListAsync();
 
         return Ok(ApiResponse<IEnumerable<SanPhamTonKhoDto>>.Ok(dto));
     }
@@ -82,7 +126,7 @@ public class SanPhamsController : ControllerBase
         {
             MaKhoNhap = 1,
             MaNcc = dto.MaNccMacDinh,
-            MaNguoiLap = 1,
+            MaNguoiLap = dto.MaNguoiLap,
             //DaThanhToanNcc = dto.ThanhToanNcc,
             NgayNhap = DateTime.Now,
             TongTienNhap = 0,
@@ -203,7 +247,7 @@ public class SanPhamsController : ControllerBase
                 {
                     MaNcc = request.MaNccMacDinh,
                     MaKhoNhap = 1,
-                    MaNguoiLap = 1,
+                    MaNguoiLap = request.MaNguoiLap,
                     NgayNhap = DateTime.Now,
                     TongTienNhap = tongTienNhap,
                     DaThanhToanNcc = 0,

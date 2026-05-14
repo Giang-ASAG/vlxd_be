@@ -33,9 +33,9 @@ namespace VLXD_API.Services
 
             string userRole;
 
-            if (request.Taikhoan == "admin")
+            if (userAccount.VaiTro!=null)
             {
-                userRole = "admin";
+                userRole = userAccount.VaiTro;
             }
             else
             {
@@ -46,6 +46,7 @@ namespace VLXD_API.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
+                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, userAccount.MaNguoiDung.ToString()),
                 new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Name, request.Taikhoan),
                 new Claim(ClaimTypes.Role,userRole)
             }),

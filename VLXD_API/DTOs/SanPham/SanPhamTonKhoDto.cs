@@ -4,6 +4,7 @@
     {
         public int MaSanPham { get; set; }
         public string MaSku { get; set; } = null!;
+        public int MaNguoiLap {  get; set; }
         public string TenSanPham { get; set; } = null!;
         public int? MaDanhMuc { get; set; }
         public int? MaNccMacDinh { get; set; }
