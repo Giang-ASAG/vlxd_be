@@ -25,7 +25,7 @@ public class KhachHangsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<KhachHangDto>>>> GetAll()
     {
-        var entities = await _context.KhachHangs.AsNoTracking().ToListAsync();
+        var entities = await _context.KhachHangs.Where(x=>x.MaKhachHang!=1).AsNoTracking().ToListAsync();
         var dto = _mapper.Map<List<KhachHangDto>>(entities);
 
         return Ok(ApiResponse<IEnumerable<KhachHangDto>>.Ok(dto));
