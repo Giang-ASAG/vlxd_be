@@ -118,7 +118,7 @@ namespace VLXD_API.Controllers
                     };
             }
 
-            var result = await query
+            var result = await query.Distinct()
                 .AsNoTracking()
                 .ToListAsync();
 
