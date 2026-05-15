@@ -103,7 +103,7 @@ namespace VLXD_API.Controllers
                                     TongTienNhap = pnk.TongTienNhap,
                                     DaThanhToanNcc = pnk.DaThanhToanNcc,
                                     TrangThaiNhapHang = pnk.TrangThai // Trạng thái phiếu nhập (cho_nhap, da_nhap_kho...)
-                                }).ToListAsync();
+                                }).Distinct().ToListAsync();
 
             return Ok(ApiResponse<IEnumerable<object>>.Ok(result));
         }
