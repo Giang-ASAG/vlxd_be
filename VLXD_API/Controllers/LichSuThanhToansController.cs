@@ -178,7 +178,7 @@ namespace VLXD_API.Controllers
                             donhang.TrangThaiThanhToan = "da_thanh_toan";
                         }
                     }
-                    item.NgayThanhToan = DateTime.Now;
+                    item.NgayThanhToan = DateTime.UtcNow.AddHours(7);
                 }
 
                 await _context.LichSuThanhToans.AddRangeAsync(listRequest);

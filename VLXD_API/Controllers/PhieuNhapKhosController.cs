@@ -185,7 +185,7 @@ public class PhieuNhapKhosController : ControllerBase
                     MaNcc = request.MaNhaCungCap,
                     MaKhoNhap = request.MaKho,
                     MaNguoiLap = request.MaNguoiDung,
-                    NgayNhap = DateTime.Now,
+                    NgayNhap = DateTime.UtcNow.AddHours(7),
                     TongTienNhap = tongTienDonHang,
                     DaThanhToanNcc = request.SoTienThanhToanNgay,
                     TrangThai = "da_nhap_kho"
@@ -212,7 +212,7 @@ public class PhieuNhapKhosController : ControllerBase
                     {
                         MaSanPham = request.MaSanPham,
                         MaKho = null,
-                        NgayThayDoi = DateTime.Now,
+                        NgayThayDoi = DateTime.UtcNow.AddHours(7),
                         LoaiGiaoDich = "NHAP_HANG",
                         SoLuongThayDoi = (decimal)request.SoLuongNhap,
                         SoLuongTonSauKhiThayDoi = (decimal)sp.SoLuong,
@@ -256,7 +256,7 @@ public class PhieuNhapKhosController : ControllerBase
                     {
                         MaSanPham = request.MaSanPham,
                         MaKho = request.MaKho,
-                        NgayThayDoi = DateTime.Now,
+                        NgayThayDoi = DateTime.UtcNow.AddHours(7),
                         LoaiGiaoDich = "NHAP_HANG",
                         SoLuongThayDoi = (decimal)request.TonKhoNhap,
                         SoLuongTonSauKhiThayDoi = tonKho.SoLuongTon ?? 0,
@@ -273,7 +273,7 @@ public class PhieuNhapKhosController : ControllerBase
                         MaNcc = request.MaNhaCungCap,
                         MaPhieuNhap = phieuNhap.MaPhieuNhap,
                         SoTienNo = tienNo,
-                        NgayPhatSinh = DateTime.Now,
+                        NgayPhatSinh = DateTime.UtcNow.AddHours(7),
                         TrangThai = "dang_no"
                     });
                 }

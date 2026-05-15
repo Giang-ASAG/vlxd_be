@@ -128,7 +128,7 @@ public class SanPhamsController : ControllerBase
             MaNcc = dto.MaNccMacDinh,
             MaNguoiLap = dto.MaNguoiLap,
             //DaThanhToanNcc = dto.ThanhToanNcc,
-            NgayNhap = DateTime.Now,
+            NgayNhap = DateTime.UtcNow.AddHours(7),
             TongTienNhap = 0,
             TrangThai = "da_nhap_kho"
             // MaPhieuNhap để identity trong DB
@@ -189,7 +189,7 @@ public class SanPhamsController : ControllerBase
         {
             MaNcc = phieuNhapKho.MaNcc,
             MaPhieuNhap = phieuNhapKho.MaPhieuNhap,
-            NgayPhatSinh = DateTime.Now,
+            NgayPhatSinh = DateTime.UtcNow.AddHours(7),
             SoTienNo = (decimal)phieuNhapKho.TongTienNhap,
             TrangThai = "dang_no"
         };
@@ -248,7 +248,7 @@ public class SanPhamsController : ControllerBase
                     MaNcc = request.MaNccMacDinh,
                     MaKhoNhap = 1,
                     MaNguoiLap = request.MaNguoiLap,
-                    NgayNhap = DateTime.Now,
+                    NgayNhap = DateTime.UtcNow.AddHours(7),
                     TongTienNhap = tongTienNhap,
                     DaThanhToanNcc = 0,
                     TrangThai = "da_nhap_kho"
@@ -319,7 +319,7 @@ public class SanPhamsController : ControllerBase
                     MaNcc = request.MaNccMacDinh,
                     MaPhieuNhap = phieuNhap.MaPhieuNhap,
                     SoTienNo = tongTienNhap,
-                    NgayPhatSinh = DateTime.Now,
+                    NgayPhatSinh = DateTime.UtcNow.AddHours(7),
                     TrangThai = "dang_no"
                 });
             }

@@ -92,7 +92,7 @@ public class DonHangsController : ControllerBase
         try
         {
             var donHang = _mapper.Map<DonHang>(request.DonHang);
-            donHang.NgayTao = DateTime.Now;
+            donHang.NgayTao = DateTime.UtcNow.AddHours(7);
             donHang.TrangThaiThanhToan = donHang.SoTienTra <= 0 ? "chua_thanh_toan" :
                                          donHang.SoTienTra >= donHang.TongTien ? "da_thanh_toan" :
                                                                            "thanh_toan_mot_phan";
@@ -122,7 +122,7 @@ public class DonHangsController : ControllerBase
                         MaDonHang = donHang.MaDonHang,
                         MaKhoXuat = 1,
                         MaNguoiXuat = request.DonHang.MaNguoiTao,
-                        NgayXuat = DateTime.Now,
+                        NgayXuat = DateTime.UtcNow.AddHours(7),
                         TrangThaiXuat = "da_xuat_kho"
                     };
                     _context.PhieuXuatKhos.Add(_mapper.Map<PhieuXuatKho>(xuatKhoDto));
@@ -141,7 +141,7 @@ public class DonHangsController : ControllerBase
             {
                 MaDonHang = donHang.MaDonHang,
                 MaKhachHang = donHang.MaKhachHang,
-                NgayPhatSinh = DateTime.Now,
+                NgayPhatSinh = DateTime.UtcNow.AddHours(7),
                 SoTienNo = soTienNo,
                 TrangThai = soTienNo > 0 ? "dang_no" : "hoan_tat"
             };
@@ -154,7 +154,7 @@ public class DonHangsController : ControllerBase
                     conNoID = congNo.Id,
                     IsNhaCungCap = false,
                     GhiChu = donHang.TrangThaiThanhToan,
-                    NgayThanhToan = DateTime.Now,
+                    NgayThanhToan = DateTime.UtcNow.AddHours(7),
                     PhuongThucThanhToan = (bool)donHang.HinhThuc,
                     SoTien = (decimal)donHang.SoTienTra,
                 };
