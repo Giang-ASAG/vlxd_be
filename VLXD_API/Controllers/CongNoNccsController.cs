@@ -82,6 +82,7 @@ namespace VLXD_API.Controllers
             var result = await (from cn in _context.CongNoNccs
                                 join ncc in _context.NhaCungCaps on cn.MaNcc equals ncc.MaNcc
                                 join pnk in _context.PhieuNhapKhos on cn.MaPhieuNhap equals pnk.MaPhieuNhap
+                                join ctpn in _context.ChiTietPhieuNhaps on pnk.MaPhieuNhap equals ctpn.MaPhieuNhap
                                 join k in _context.Khos on pnk.MaKhoNhap equals k.MaKho
                                 join nd in _context.NguoiDungs on pnk.MaNguoiLap equals nd.MaNguoiDung
                                 where cn.MaNcc == maNcc && cn.TrangThai == "dang_no"
@@ -90,6 +91,7 @@ namespace VLXD_API.Controllers
                                     IdCongNo = cn.Id,
                                     MaNhaCungCap = cn.MaNcc,
                                     MaPhieuNhap = cn.MaPhieuNhap,
+                                    LoaiNhap = ctpn.LoaiNhap,
                                     SoTienNo = cn.SoTienNo,
                                     NgayPhatSinh = cn.NgayPhatSinh,
                                     TrangThaiNo = cn.TrangThai, // Trạng thái nợ (dang_no)
