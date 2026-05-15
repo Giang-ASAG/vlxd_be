@@ -51,7 +51,7 @@ namespace VLXD_API.Controllers
                         on ls.conNoID equals cn.Id
                     join pnk in _context.PhieuNhapKhos
                         on cn.MaPhieuNhap equals pnk.MaPhieuNhap
-                    join ctpn in _context.ChiTietPhieuNhaps on pnk.MaPhieuNhap equals ctpn.MaPhieuNhap
+                   // join ctpn in _context.ChiTietPhieuNhaps on pnk.MaPhieuNhap equals ctpn.MaPhieuNhap
                     join k in _context.Khos
                         on pnk.MaKhoNhap equals k.MaKho into khoGroup
                     from k in khoGroup.DefaultIfEmpty()
@@ -67,7 +67,7 @@ namespace VLXD_API.Controllers
                         NgayPhatSinh = ls.NgayThanhToan,
                         KhoNhap = k != null ? k.TenKho : "Không xác định",
                         TongTienNhap = pnk.TongTienNhap,
-                        LoaiNhap = ctpn.LoaiNhap,
+                        //LoaiNhap = ctpn.LoaiNhap,
                         SoTienThanhToan = ls.SoTien,
 
                         TongDaThanhToan = pnk.DaThanhToanNcc,
