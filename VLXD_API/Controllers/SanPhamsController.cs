@@ -264,7 +264,7 @@ public class SanPhamsController : ControllerBase
                 // =========================
                 // NHẬP CỬA HÀNG
                 // =========================
-                if (soLuongCuaHang > 0)
+                if (soLuongCuaHang > 0 && sp.SoLuong!= soLuongCuaHang)
                 {
                     sp.SoLuong = (int)soLuongCuaHang;
 
@@ -296,17 +296,20 @@ public class SanPhamsController : ControllerBase
 
                         _context.TonKhoChiTiets.Add(tonKho);
                     }
-
-                    tonKho.SoLuongTon = soLuongKho;
-
-                    chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
+                    if(soLuongKho != tonKho.SoLuongTon)
                     {
-                        MaPhieuNhap = phieuNhap.MaPhieuNhap,
-                        MaSanPham = sp.MaSanPham,
-                        SoLuong = soLuongKho,
-                        GiaNhap = giaNhap,
-                        LoaiNhap = true
-                    });
+                        tonKho.SoLuongTon = soLuongKho;
+
+                        chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
+                        {
+                            MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                            MaSanPham = sp.MaSanPham,
+                            SoLuong = soLuongKho,
+                            GiaNhap = giaNhap,
+                            LoaiNhap = true
+                        });
+                    }
+                    
                 }
 
                 _context.ChiTietPhieuNhaps.AddRange(chiTietPhieuNhaps);
