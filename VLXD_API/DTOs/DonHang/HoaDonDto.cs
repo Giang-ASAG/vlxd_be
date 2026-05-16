@@ -1,4 +1,6 @@
-﻿namespace VLXD_API.DTOs.DonHang
+﻿using VLXD_API.DTOs.ChiTietDonHang;
+
+namespace VLXD_API.DTOs.DonHang
 {
     public class HoaDonDto
     {
@@ -14,6 +16,7 @@
 
         public string? TrangThaiThanhToan { get; set; }
         public bool? HinhThuc { get; set; }
+        public  List<ChiTietHoaDonDto> chiTietHoaDonDtos { get; set; }
         //public decimal? SoTienTra { get; set; }
     }
 }

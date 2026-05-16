@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VLXD_API.Common;
+using VLXD_API.DTOs.ChiTietDonHang;
 using VLXD_API.DTOs.DonHang;
 using VLXD_API.DTOs.PhieuXuatKho;
 using VLXD_API.Models;
@@ -172,21 +173,53 @@ public class DonHangsController : ControllerBase
     }
 
     [HttpGet("HoaDon")]
-    public async Task<ActionResult<ApiResponse<object>>> getHoaDon() 
+    public async Task<ActionResult<ApiResponse<object>>> GetHoaDon()
     {
-        var hoadon = _context.DonHangs.Select(x => new HoaDonDto
-        {
-            MaDonHang = x.MaDonHang,
-            HinhThuc = x.HinhThuc,
-            MaKhachHang = x.MaKhachHang,
-            NgayTao = x.NgayTao,
-            TenKhachHang = _context.KhachHangs.First(t=>t.MaKhachHang==x.MaKhachHang).HoTen,
-            TongTien = x.TongTien, 
-            khachDaTra = x.SoTienTra,
-            TrangThaiThanhToan = x.TrangThaiThanhToan,
-            MaNguoiTao = x.MaNguoiTao,
-            TenNguoiTao = _context.NguoiDungs.First(q=>q.MaNguoiDung==x.MaNguoiTao).HoTen
-        }).ToList();
-        return Ok(ApiResponse<IEnumerable<HoaDonDto>>.Ok(hoadon));
+        var hoaDon = await _context.DonHangs
+            .Select(x => new HoaDonDto
+            {
+                MaDonHang = x.MaDonHang,
+                HinhThuc = x.HinhThuc,
+                MaKhachHang = x.MaKhachHang,
+                NgayTao = x.NgayTao,
+
+                TenKhachHang = _context.KhachHangs
+                    .Where(t => t.MaKhachHang == x.MaKhachHang)
+                    .Select(t => t.HoTen)
+                    .FirstOrDefault(),
+
+                TongTien = x.TongTien,
+                khachDaTra = x.SoTienTra,
+                TrangThaiThanhToan = x.TrangThaiThanhToan,
+
+                MaNguoiTao = x.MaNguoiTao,
+
+                TenNguoiTao = _context.NguoiDungs
+                    .Where(q => q.MaNguoiDung == x.MaNguoiTao)
+                    .Select(q => q.HoTen)
+                    .FirstOrDefault(),
+
+                chiTietHoaDonDtos = _context.ChiTietDonHangs
+                    .Where(y => y.MaDonHang == x.MaDonHang)
+                    .Select(y => new ChiTietHoaDonDto
+                    {
+                        Id = y.Id,
+                        MaDonHang = y.MaDonHang,
+                        MaSanPham = y.MaSanPham,
+                        SoLuong = y.SoLuong,
+                        DonGia = y.DonGia,
+                        DonViTinh = y.DonViTinh,
+                        ThanhTien = y.ThanhTien,
+
+                        TenSanPham = _context.SanPhams
+                            .Where(s => s.MaSanPham == y.MaSanPham)
+                            .Select(s => s.TenSanPham)
+                            .FirstOrDefault()
+                    })
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return Ok(ApiResponse<IEnumerable<HoaDonDto>>.Ok(hoaDon));
     }
 }
