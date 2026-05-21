@@ -92,6 +92,10 @@ public class DonHangsController : ControllerBase
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
+            if (request.ChiTietDonHangs.Count() <= 0)
+            {
+                return BadRequest("Khong co don hang nao duoc tao");
+            }
             var donHang = _mapper.Map<DonHang>(request.DonHang);
             donHang.NgayTao = DateTime.UtcNow.AddHours(7);
             donHang.TrangThaiThanhToan = donHang.SoTienTra <= 0 ? "chua_thanh_toan" :
@@ -110,14 +114,18 @@ public class DonHangsController : ControllerBase
                 {
                     sanPham.SoLuong -= (int)item.SoLuong;
                 }
-                
+
                 else
                 {
                     var slton = _context.TonKhoChiTiets.First(x => x.MaSanPham == item.MaSanPham);
-                    if(slton.SoLuongTon < item.SoLuong) throw new Exception($"Sản phẩm {sanPham.MaSanPham} không đủ hàng");
+                    //if(slton.SoLuongTon < item.SoLuong) throw new Exception($"Sản phẩm {sanPham.MaSanPham} không đủ hàng");
                     var slhientai = (int)item.SoLuong - sanPham.SoLuong;
-                    sanPham.SoLuong = 0;
+                    if (slton.SoLuongTon < slhientai)
+                    {
+                        throw new Exception($"Sản phẩm {sanPham.MaSanPham} không đủ hàng");
+                    }
                     slton.SoLuongTon -= slhientai;
+                    sanPham.SoLuong = 0;
                     PhieuXuatKhoDto xuatKhoDto = new PhieuXuatKhoDto
                     {
                         MaDonHang = donHang.MaDonHang,
@@ -126,10 +134,11 @@ public class DonHangsController : ControllerBase
                         NgayXuat = DateTime.UtcNow.AddHours(7),
                         TrangThaiXuat = "da_xuat_kho"
                     };
+
                     _context.PhieuXuatKhos.Add(_mapper.Map<PhieuXuatKho>(xuatKhoDto));
                     //await _context.SaveChangesAsync();
                 }
-                    chiTiets.Add(_mapper.Map<ChiTietDonHang>(item));
+                chiTiets.Add(_mapper.Map<ChiTietDonHang>(item));
             }
             await _context.ChiTietDonHangs.AddRangeAsync(chiTiets);
             await _context.SaveChangesAsync();

@@ -291,7 +291,9 @@ public class SanPhamsController : ControllerBase
                         tonKho = new TonKhoChiTiet
                         {
                             MaSanPham = id,
-                            SoLuongTon = 0
+                            SoLuongTon = 0,
+                            MaKho =1
+                            
                         };
 
                         _context.TonKhoChiTiets.Add(tonKho);
