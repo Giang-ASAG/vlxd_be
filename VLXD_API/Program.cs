@@ -35,7 +35,7 @@ namespace VLXD_API
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("DefaultConnection is missing in appsettings.json.");
 
-                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                options.UseNpgsql(connectionString);
             });
 
             // Cấu hình CORS
@@ -91,7 +91,7 @@ namespace VLXD_API
 
 
             app.MapControllers();
-            app.MapGet("/health", () => "OK");
+            app.MapGet("/health", () => Results.Ok("OK"));
             app.Run();
         }
     }
