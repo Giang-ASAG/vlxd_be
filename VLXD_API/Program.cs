@@ -75,9 +75,9 @@ namespace VLXD_API
 
             app.UseCors("AllowAll");
 
-
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
 
             //if (!app.Environment.IsDevelopment())
             //{
@@ -91,7 +91,7 @@ namespace VLXD_API
 
 
             app.MapControllers();
-
+            app.MapGet("/health", () => "OK");
             app.Run();
         }
     }
