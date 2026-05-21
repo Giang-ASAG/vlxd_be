@@ -37,7 +37,7 @@ namespace VLXD_API
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("DefaultConnection is missing in appsettings.json.");
 
-                options.UseNpgsql(connectionString);
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
             });
 
             // FIX LỖI CORS: Đổi tên biến builder bên trong thành policy để tránh trùng lặp

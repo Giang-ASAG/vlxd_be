@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace VLXD_API.Models;
 
@@ -49,14 +49,15 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TonKhoChiTiet> TonKhoChiTiets { get; set; }
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseMySql("server=localhost;port=3306;database=deafaultdb;user=root;password=123123", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseMySql("server=localhost;port=3306;database=deafaultdb;user=root;password=123123", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8mb4_0900_ai_ci");
+            .UseCollation("utf8mb4_0900_ai_ci")
+            .HasCharSet("utf8mb4");
 
         modelBuilder.Entity<ChiTietDonHang>(entity =>
         {
@@ -76,7 +77,7 @@ public partial class AppDbContext : DbContext
             entity.ToTable("lichsuthanhtoan");
 
             entity.Property(e => e.IsNhaCungCap)
-                .HasColumnType("boolean")
+                .HasColumnType("tinyint(1)")
                 .IsRequired();
 
             // BỔ SUNG: Ánh xạ conNoID
@@ -89,7 +90,7 @@ public partial class AppDbContext : DbContext
                 .IsRequired();
 
             entity.Property(e => e.PhuongThucThanhToan)
-                .HasColumnType("boolean")
+                .HasColumnType("tinyint(1)")
                 .HasDefaultValue(false)
                 .HasComment("0: tien_mat, 1: chuyen_khoan");
 
@@ -99,6 +100,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.GhiChu)
                 .HasMaxLength(500)
+                .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
         modelBuilder.Entity<ChiTietPhieuNhap>(entity =>
