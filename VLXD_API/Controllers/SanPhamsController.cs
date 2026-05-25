@@ -242,7 +242,7 @@ public class SanPhamsController : ControllerBase
             // =========================
             
 
-            if (tongSoLuongNhap > 0 || sp.SoLuong!= soLuongCuaHang)
+            if (tongSoLuongNhap > 0 && sp.SoLuong != soLuongCuaHang)
             {
                 decimal tongTienNhap = tongSoLuongNhap * giaNhap;
 
