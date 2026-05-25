@@ -20,7 +20,7 @@ public partial class PhieuNhapKho
     public int? MaNcc { get; set; }
 
     [Column("ma_kho_nhap")]
-    public int? MaKhoNhap { get; set; }
+    public int? MaKhoNhap { get; set; } 
 
     [Column("ma_nguoi_lap")]
     public int? MaNguoiLap { get; set; }

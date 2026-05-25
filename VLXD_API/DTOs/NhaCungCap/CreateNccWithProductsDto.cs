@@ -8,7 +8,7 @@
     public string GhiChu { get; set; }
 
     // Thông tin phụ cho phiếu nhập kho
-    public int MaKhoNhap { get; set; } // Kho chứa hàng
+    //public int MaKhoNhap { get; set; } // Kho chứa hàng
     public int MaNguoiLap { get; set; } // Nhân viên bấm máy
 
     // Danh sách các ID sản phẩm được chọn từ giao diện (những SP đang có MaNcc = null)

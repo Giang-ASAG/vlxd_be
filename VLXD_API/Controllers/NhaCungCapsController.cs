@@ -99,7 +99,7 @@ public class NhaCungCapsController : ControllerBase
             // 2. Tạo vỏ Phiếu nhập kho (Tổng tiền tạm thời bằng 0)
             var phieuNhapKho = new PhieuNhapKho
             {
-                MaKhoNhap = dto.MaKhoNhap,
+                MaKhoNhap = 1,
                 MaNcc = nhaCungCap.MaNcc,
                 MaNguoiLap = dto.MaNguoiLap,
                 NgayNhap = DateTime.Now,
@@ -210,7 +210,7 @@ public class NhaCungCapsController : ControllerBase
             // Tạo một Phiếu nhập kho MỚI gắn với Nhà cung cấp này (sử dụng biến 'id' từ URL hoặc nhaCungCap.MaNcc)
             var phieuNhapKho = new PhieuNhapKho
             {
-                MaKhoNhap = dto.MaKhoNhap,
+                MaKhoNhap = 1,
                 MaNcc = nhaCungCap.MaNcc,
                 MaNguoiLap = dto.MaNguoiLap,
                 NgayNhap = DateTime.Now,
