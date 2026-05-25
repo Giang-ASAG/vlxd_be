@@ -118,7 +118,7 @@ public class SanPhamsController : ControllerBase
         if (await _context.SanPhams.AnyAsync(x => x.MaSku == dto.MaSku))
             return BadRequest(ApiResponse<string>.Fail("Fail", "Trùng mã"));
         var entity = _mapper.Map<SanPham>(dto);
-        
+        entity.MaNccMacDinh = 0;
         _context.SanPhams.Add(entity);
 
         // 2) Tạo và lưu PhieuNhapKho (không hard-code MaPhieuNhap = 1)
@@ -222,13 +222,14 @@ public class SanPhamsController : ControllerBase
             // UPDATE THÔNG TIN SẢN PHẨM
             // =========================
             sp.TenSanPham = request.TenSanPham;
+            var ncc = await _context.NhaCungCaps.FindAsync(sp.MaNccMacDinh);
          //   sp.MaSku = request.MaSku;
             sp.GiaBanLe = request.GiaBanLe;
             sp.Thue = request.Thue;
             sp.GiaSauThue = request.GiaSauThue;
             sp.MaDanhMuc = request.MaDanhMuc;
             sp.DonViChinh = request.DonViChinh;
-            sp.MaNccMacDinh = request.MaNccMacDinh;
+            sp.MaNccMacDinh = ncc.MaNcc;
 
 
             decimal soLuongCuaHang = request.SoLuong;
@@ -239,7 +240,9 @@ public class SanPhamsController : ControllerBase
             // =========================
             // NHẬP HÀNG
             // =========================
-            if (tongSoLuongNhap > 0)
+            
+
+            if (tongSoLuongNhap > 0 || sp.SoLuong!= soLuongCuaHang)
             {
                 decimal tongTienNhap = tongSoLuongNhap * giaNhap;
 
