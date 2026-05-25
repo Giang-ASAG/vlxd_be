@@ -136,7 +136,7 @@ public class SanPhamsController : ControllerBase
         //};
 
       //  _context.PhieuNhapKhos.Add(phieuNhapKho);
-        //await _context.SaveChangesAsync(); // phải Save để có phieuNhapKho.MaPhieuNhap
+        await _context.SaveChangesAsync(); // phải Save để có phieuNhapKho.MaPhieuNhap
 
         // 3) Lập danh sách chi tiết theo điều kiện
         var chiTietDons = new List<ChiTietPhieuNhap>();
