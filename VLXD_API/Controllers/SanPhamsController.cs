@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VLXD_API.Common;
+using VLXD_API.DTOs.KhachHang;
 using VLXD_API.DTOs.SanPham;
 using VLXD_API.Models;
 using VLXD_API.Models;
@@ -177,7 +178,7 @@ public class SanPhamsController : ControllerBase
 
         // 4) Lưu chi tiết
         await _context.ChiTietPhieuNhaps.AddRangeAsync(chiTietDons);
-      
+
         await _context.SaveChangesAsync();
 
         // 5) Tính TongTienNhap và update
@@ -223,7 +224,7 @@ public class SanPhamsController : ControllerBase
             // =========================
             sp.TenSanPham = request.TenSanPham;
             var ncc = await _context.NhaCungCaps.FindAsync(sp.MaNccMacDinh);
-         //   sp.MaSku = request.MaSku;
+            //   sp.MaSku = request.MaSku;
             sp.GiaBanLe = request.GiaBanLe;
             sp.Thue = request.Thue;
             sp.GiaSauThue = request.GiaSauThue;
@@ -240,7 +241,7 @@ public class SanPhamsController : ControllerBase
             // =========================
             // NHẬP HÀNG
             // =========================
-            
+
 
             if (tongSoLuongNhap > 0 && sp.SoLuong != soLuongCuaHang)
             {
@@ -267,7 +268,7 @@ public class SanPhamsController : ControllerBase
                 // =========================
                 // NHẬP CỬA HÀNG
                 // =========================
-                if (soLuongCuaHang > 0 && sp.SoLuong!= soLuongCuaHang)
+                if (soLuongCuaHang > 0 && sp.SoLuong != soLuongCuaHang)
                 {
                     sp.SoLuong = (int)soLuongCuaHang;
 
@@ -295,13 +296,13 @@ public class SanPhamsController : ControllerBase
                         {
                             MaSanPham = id,
                             SoLuongTon = 0,
-                            MaKho =1
-                            
+                            MaKho = 1
+
                         };
 
                         _context.TonKhoChiTiets.Add(tonKho);
                     }
-                    if(soLuongKho != tonKho.SoLuongTon)
+                    if (soLuongKho != tonKho.SoLuongTon)
                     {
                         tonKho.SoLuongTon = soLuongKho;
 
@@ -314,7 +315,7 @@ public class SanPhamsController : ControllerBase
                             LoaiNhap = true
                         });
                     }
-                    
+
                 }
 
                 _context.ChiTietPhieuNhaps.AddRange(chiTietPhieuNhaps);
@@ -388,6 +389,14 @@ public class SanPhamsController : ControllerBase
 
         return Ok(ApiResponse<string>.Ok("Deleted successfully."));
     }
+    [HttpGet("getSanPhambyNCC/{id}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<SanPhamDto>>>> getByINCC(int id)
+    {
+        var entities = await _context.SanPhams.Where(x=>x.MaNccMacDinh==id).ToListAsync();
+        var dto = _mapper.Map<List<SanPhamDto>>(entities);
+        return Ok(ApiResponse<IEnumerable<SanPhamDto>>.Ok(dto));
+    }
+
 }
 
 
