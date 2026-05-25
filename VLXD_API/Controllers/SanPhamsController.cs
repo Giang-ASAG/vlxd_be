@@ -119,7 +119,7 @@ public class SanPhamsController : ControllerBase
         if (await _context.SanPhams.AnyAsync(x => x.MaSku == dto.MaSku))
             return BadRequest(ApiResponse<string>.Fail("Fail", "Trùng mã"));
         var entity = _mapper.Map<SanPham>(dto);
-        entity.MaNccMacDinh = 0;
+        entity.MaNccMacDinh = null;
         _context.SanPhams.Add(entity);
 
         // 2) Tạo và lưu PhieuNhapKho (không hard-code MaPhieuNhap = 1)
@@ -392,7 +392,7 @@ public class SanPhamsController : ControllerBase
     [HttpGet("getSanPhambyNCC/{id}")]
     public async Task<ActionResult<ApiResponse<IEnumerable<SanPhamDto>>>> getByINCC(int id)
     {
-        var entities = await _context.SanPhams.Where(x=>x.MaNccMacDinh==id).ToListAsync();
+        var entities = await _context.SanPhams.Where(x=>x.MaNccMacDinh==id || x.MaNccMacDinh ==null).ToListAsync();
         var dto = _mapper.Map<List<SanPhamDto>>(entities);
         return Ok(ApiResponse<IEnumerable<SanPhamDto>>.Ok(dto));
     }
