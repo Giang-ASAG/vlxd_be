@@ -392,7 +392,16 @@ public class SanPhamsController : ControllerBase
     [HttpGet("getSanPhambyNCC/{id}")]
     public async Task<ActionResult<ApiResponse<IEnumerable<SanPhamDto>>>> getByINCC(int id)
     {
-        var entities = await _context.SanPhams.Where(x=>x.MaNccMacDinh==id || x.MaNccMacDinh ==null).ToListAsync();
+        var entities = await _context.SanPhams.ToListAsync();
+        if (id == 0)
+        {
+            entities = entities.Where(x => x.MaNccMacDinh == null).ToList();
+        }
+        else
+        {
+            entities = entities.Where(x => x.MaNccMacDinh == id).ToList();
+
+        }
         var dto = _mapper.Map<List<SanPhamDto>>(entities);
         return Ok(ApiResponse<IEnumerable<SanPhamDto>>.Ok(dto));
     }
