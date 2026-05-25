@@ -123,20 +123,20 @@ public class SanPhamsController : ControllerBase
         _context.SanPhams.Add(entity);
 
         // 2) Tạo và lưu PhieuNhapKho (không hard-code MaPhieuNhap = 1)
-        var phieuNhapKho = new PhieuNhapKho
-        {
-            MaKhoNhap = 1,
-            MaNcc = dto.MaNccMacDinh,
-            MaNguoiLap = dto.MaNguoiLap,
-            //DaThanhToanNcc = dto.ThanhToanNcc,
-            NgayNhap = DateTime.UtcNow.AddHours(7),
-            TongTienNhap = 0,
-            TrangThai = "da_nhap_kho"
-            // MaPhieuNhap để identity trong DB
-        };
+        //var phieuNhapKho = new PhieuNhapKho
+        //{
+        //    MaKhoNhap = 1,
+        //    MaNcc = dto.MaNccMacDinh,
+        //    MaNguoiLap = dto.MaNguoiLap,
+        //    //DaThanhToanNcc = dto.ThanhToanNcc,
+        //    NgayNhap = DateTime.UtcNow.AddHours(7),
+        //    TongTienNhap = 0,
+        //    TrangThai = "da_nhap_kho"
+        //    // MaPhieuNhap để identity trong DB
+        //};
 
-        _context.PhieuNhapKhos.Add(phieuNhapKho);
-        await _context.SaveChangesAsync(); // phải Save để có phieuNhapKho.MaPhieuNhap
+      //  _context.PhieuNhapKhos.Add(phieuNhapKho);
+        //await _context.SaveChangesAsync(); // phải Save để có phieuNhapKho.MaPhieuNhap
 
         // 3) Lập danh sách chi tiết theo điều kiện
         var chiTietDons = new List<ChiTietPhieuNhap>();
@@ -147,7 +147,7 @@ public class SanPhamsController : ControllerBase
             {
                 SoLuong = dto.SoLuong,
                 MaSanPham = entity.MaSanPham,
-                MaPhieuNhap = phieuNhapKho.MaPhieuNhap,
+                MaPhieuNhap = null,
                 GiaNhap = (decimal)dto.GiaNhapGanNhat,
                 LoaiNhap = false // Nhập sản phẩm
             });
@@ -167,7 +167,7 @@ public class SanPhamsController : ControllerBase
             {
                 SoLuong = dto.TonKhoHienTai,
                 MaSanPham = entity.MaSanPham,
-                MaPhieuNhap = phieuNhapKho.MaPhieuNhap,
+                MaPhieuNhap = null,
                 GiaNhap = (decimal)dto.GiaNhapGanNhat,
                 LoaiNhap = true // Nhập kho
             });
@@ -183,18 +183,18 @@ public class SanPhamsController : ControllerBase
 
         // 5) Tính TongTienNhap và update
         // Nếu ThanhTien là field computed/trigger thì phải đảm bảo nó được set đúng.
-        var tongTien = chiTietDons.Sum(x => x.ThanhTien);
-        phieuNhapKho.TongTienNhap = tongTien;
+        //var tongTien = chiTietDons.Sum(x => x.ThanhTien);
+       // phieuNhapKho.TongTienNhap = tongTien;
 
-        CongNoNcc congNo = new CongNoNcc
-        {
-            MaNcc = phieuNhapKho.MaNcc,
-            MaPhieuNhap = phieuNhapKho.MaPhieuNhap,
-            NgayPhatSinh = DateTime.UtcNow.AddHours(7),
-            SoTienNo = (decimal)phieuNhapKho.TongTienNhap,
-            TrangThai = "dang_no"
-        };
-        await _context.CongNoNccs.AddAsync(congNo);
+        //CongNoNcc congNo = new CongNoNcc
+        //{
+        //    MaNcc = phieuNhapKho.MaNcc,
+        //    MaPhieuNhap = phieuNhapKho.MaPhieuNhap,
+        //    NgayPhatSinh = DateTime.UtcNow.AddHours(7),
+        //    SoTienNo = (decimal)phieuNhapKho.TongTienNhap,
+        //    TrangThai = "dang_no"
+        //};
+        //await _context.CongNoNccs.AddAsync(congNo);
 
         await _context.SaveChangesAsync();
 

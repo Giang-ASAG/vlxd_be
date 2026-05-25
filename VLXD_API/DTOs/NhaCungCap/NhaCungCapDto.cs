@@ -8,4 +8,5 @@ public class NhaCungCapDto
     public string? Email { get; set; }
     public string? DiaChi { get; set; }
     public string? GhiChu { get; set; }
+    public List<int> maSanPhams {  get; set; }
 }
