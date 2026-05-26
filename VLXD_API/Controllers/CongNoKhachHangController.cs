@@ -80,6 +80,70 @@ namespace VLXD_API.Controllers
 
             return Ok(ApiResponse<IEnumerable<object>>.Ok(result));
         }
+        [HttpGet("don-hang/{id}")]
+        public async Task<ActionResult<ApiResponse<object>>> GetByDonHang(int id)
+        {
 
+            var result = await _context.CongNoKhachHangs
+                .FirstOrDefaultAsync(x =>
+                    x.MaDonHang == id);
+
+            if (result == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("123","Không tìm thấy công nợ"));
+            }
+
+            return Ok(ApiResponse<object>.Ok(result));
+        }
+
+        [HttpPost("thanh-toan-hoa-don")]
+        public async Task<ActionResult<ApiResponse<object>>> ThanhToanHoaDon(ThanhToanDTO dto)
+        {
+
+            var result = await _context.CongNoKhachHangs
+                .FirstOrDefaultAsync(x =>
+                    x.Id==dto.ma_cn);
+            var dh = await _context.DonHangs
+          .FirstOrDefaultAsync(x =>
+              x.MaDonHang == result.MaDonHang);
+            if (result == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("123", "Không tìm thấy công nợ"));
+            }
+            LichSuThanhToan lichSu = new LichSuThanhToan
+            {
+                conNoID = dto.ma_cn,
+                GhiChu = dto.ghichu,
+                IsNhaCungCap = false,
+                NgayThanhToan = dto.ngaythanhtoan,
+                PhuongThucThanhToan = dto.pttt,
+                SoTien = dto.sotien
+                
+
+            };
+            if (result.SoTienNo <= dto.sotien)
+            {
+                result.SoTienNo = 0;
+                dh.TrangThaiThanhToan = "da_thanh_toan";
+                dh.SoTienTra += dto.sotien;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                result.SoTienNo -= dto.sotien;
+                dh.TrangThaiThanhToan = "thanh_toan_mot_phan";
+                dh.SoTienTra += dto.sotien;
+                await _context.SaveChangesAsync();
+            }
+            return Ok(ApiResponse<IEnumerable<string>>.Succes("Khong loi", "thanh toán thành công"));
+        }
+    }
+    public class ThanhToanDTO
+    {
+        public int ma_cn {  get; set; }
+        public decimal sotien { get; set; }
+        public string? ghichu { get; set; }
+        public bool pttt { get; set; }
+        public DateTime ngaythanhtoan { get; set; }
     }
 }
