@@ -101,6 +101,11 @@ public class DonHangsController : ControllerBase
             donHang.TrangThaiThanhToan = donHang.SoTienTra <= 0 ? "chua_thanh_toan" :
                                          donHang.SoTienTra >= donHang.TongTien ? "da_thanh_toan" :
                                                                            "thanh_toan_mot_phan";
+            if (request.DonHang.MaKhachHang <= 0)
+                donHang.MaKhachHang = null;
+            else
+                donHang.MaKhachHang = request.DonHang.MaKhachHang;
+
             await _context.DonHangs.AddAsync(donHang);
             await _context.SaveChangesAsync();
 
@@ -143,8 +148,7 @@ public class DonHangsController : ControllerBase
             await _context.ChiTietDonHangs.AddRangeAsync(chiTiets);
             await _context.SaveChangesAsync();
 
-
-            // 3. Công nợ
+                // 3. Công nợ
             var soTienNo = (decimal)(donHang.TongTien - donHang.SoTienTra);
 
             var congNo = new CongNoKhachHang
@@ -226,7 +230,7 @@ public class DonHangsController : ControllerBase
                             .FirstOrDefault()
                     })
                     .ToList()
-            })
+            }).OrderByDescending(z => z.NgayTao)
             .ToListAsync();
 
         return Ok(ApiResponse<IEnumerable<HoaDonDto>>.Ok(hoaDon));
