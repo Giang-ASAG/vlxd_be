@@ -13,8 +13,6 @@ public class SanPhamDto
 
     public decimal? Thue { get; set; }
     public decimal? GiaSauThue { get; set; }
-
-    public int SoLuong { get; set; }
     public int? TonKhoToiThieu { get; set; }
     public int? TonKhoToiDa { get; set; }
     public DateTime? NgayTao { get; set; }

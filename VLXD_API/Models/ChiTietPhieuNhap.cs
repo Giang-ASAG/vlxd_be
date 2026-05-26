@@ -28,8 +28,6 @@ public partial class ChiTietPhieuNhap
     [Column("gia_nhap")]
     [Precision(18, 2)]
     public decimal GiaNhap { get; set; }
-    [Column("loai_nhap")]
-    public bool? LoaiNhap { get; set; }
 
     [Column("thanh_tien")]
     [Precision(18, 2)]

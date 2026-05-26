@@ -78,7 +78,6 @@ public class PhieuNhapKhosController : ControllerBase
                 SoLuong = x.tk.SoLuong,
                 GiaNhap = x.tk.GiaNhap,
                 TenSanPham = x.sp.TenSanPham,
-                LoaiNhap = x.tk.LoaiNhap,
                 MaPhieuNhap = x.tk.MaPhieuNhap,
                 ThanhTien = x.tk.ThanhTien
             }).ToList();
@@ -146,7 +145,7 @@ public class PhieuNhapKhosController : ControllerBase
     public async Task<IActionResult> NhapThemHang([FromBody] NhapThemHangDto request)
     {
         // 1. Tính toán tổng tiền (Cửa hàng + Kho)
-        decimal tongTienDonHang = (decimal)(request.SoLuongNhap + request.TonKhoNhap) * request.DonGiaNhap;
+        decimal tongTienDonHang = (decimal)(request.TonKhoNhap) * request.DonGiaNhap;
 
         if (request.SoTienThanhToanNgay > tongTienDonHang)
         {
@@ -160,7 +159,7 @@ public class PhieuNhapKhosController : ControllerBase
             if (sp == null) return NotFound("Sản phẩm không tồn tại.");
 
             // Cập nhật giá nhập gần nhất (Giá vốn trên UI)
-            if (request.SoLuongNhap > 0 || request.TonKhoNhap > 0)
+            if (request.TonKhoNhap > 0)
             {
                 sp.GiaNhapGanNhat = request.DonGiaNhap;
             }
@@ -177,7 +176,7 @@ public class PhieuNhapKhosController : ControllerBase
                 sp.DonViChinh = request.SanPham.DonViChinh;
             }
 
-            if (request.SoLuongNhap > 0 || request.TonKhoNhap > 0)
+            if (request.TonKhoNhap > 0)
             {
                 // A. Khởi tạo Phiếu Nhập Kho
                 var phieuNhap = new PhieuNhapKho
@@ -193,32 +192,7 @@ public class PhieuNhapKhosController : ControllerBase
                 _context.PhieuNhapKhos.Add(phieuNhap);
                 await _context.SaveChangesAsync();
 
-                // B. XỬ LÝ NHẬP CHO CỬA HÀNG
-                if (request.SoLuongNhap > 0)
-                {
-                    sp.SoLuong += (int)request.SoLuongNhap;
-
-                    _context.ChiTietPhieuNhaps.Add(new ChiTietPhieuNhap
-                    {
-                        MaPhieuNhap = phieuNhap.MaPhieuNhap,
-                        MaSanPham = request.MaSanPham,
-                        SoLuong = (decimal)request.SoLuongNhap,
-                        GiaNhap = request.DonGiaNhap, // Giá vốn tại thời điểm nhập
-                        ThanhTien = (decimal)request.SoLuongNhap * request.DonGiaNhap,
-                        LoaiNhap = false
-                    });
-
-                    _context.TheKhos.Add(new TheKho
-                    {
-                        MaSanPham = request.MaSanPham,
-                        MaKho = null,
-                        NgayThayDoi = DateTime.UtcNow.AddHours(7),
-                        LoaiGiaoDich = "NHAP_HANG",
-                        SoLuongThayDoi = (decimal)request.SoLuongNhap,
-                        SoLuongTonSauKhiThayDoi = (decimal)sp.SoLuong,
-                        MaChungTuLienQuan = "PNK" + phieuNhap.MaPhieuNhap
-                    });
-                }
+                       
 
                 // C. XỬ LÝ NHẬP CHO KHO
                 if (request.TonKhoNhap > 0 && request.MaKho.HasValue)
@@ -249,7 +223,6 @@ public class PhieuNhapKhosController : ControllerBase
                         SoLuong = (decimal)request.TonKhoNhap,
                         GiaNhap = request.DonGiaNhap,
                         ThanhTien = (decimal)request.TonKhoNhap * request.DonGiaNhap,
-                        LoaiNhap = true
                     });
 
                     _context.TheKhos.Add(new TheKho

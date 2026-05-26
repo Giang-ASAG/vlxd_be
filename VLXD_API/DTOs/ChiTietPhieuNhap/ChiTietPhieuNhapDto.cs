@@ -10,6 +10,5 @@ public class ChiTietPhieuNhapDto
     public string? TenSanPham { get; set; }
     public decimal SoLuong { get; set; }
     public decimal GiaNhap { get; set; }
-    public bool? LoaiNhap { get; set; } //False = nhap sp, true = nhap kho
     public decimal? ThanhTien { get; set; }
 }

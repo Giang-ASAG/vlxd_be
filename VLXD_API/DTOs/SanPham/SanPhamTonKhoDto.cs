@@ -15,7 +15,7 @@
         public decimal? Thue { get; set; }
         public decimal? GiaSauThue { get; set; }
 
-        public int SoLuong { get; set; }
+
         public int TonKhoHienTai { get; set; }
         public int? TonKhoToiThieu { get; set; }
         public int? TonKhoToiDa { get; set; }

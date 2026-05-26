@@ -49,8 +49,6 @@ public partial class SanPham
     [Precision(18, 2)]
     public decimal? GiaSauThue { get; set; }
 
-    [Column("so_luong")]
-    public int SoLuong { get; set; }
 
     [Column("ton_kho_toi_thieu")]
     public int? TonKhoToiThieu { get; set; }

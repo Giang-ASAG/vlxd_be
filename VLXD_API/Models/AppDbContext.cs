@@ -110,8 +110,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ThanhTien)
                 .HasComputedColumnSql("`so_luong` * `gia_nhap`", true);
 
-            entity.Property(e => e.LoaiNhap)
-                .HasDefaultValue(false);
 
             entity.HasOne(d => d.MaPhieuNhapNavigation)
                 .WithMany(p => p.ChiTietPhieuNhaps)
@@ -225,9 +223,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.MaSanPham).HasName("PRIMARY");
 
-            entity.Property(e => e.SoLuong)
-                .HasColumnName("so_luong")
-                .HasDefaultValue(0);
+            
 
             entity.Property(e => e.GiaBanLe)
                 .HasDefaultValueSql("'0.00'");
