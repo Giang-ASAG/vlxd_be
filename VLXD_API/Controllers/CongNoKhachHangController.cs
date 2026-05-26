@@ -95,6 +95,23 @@ namespace VLXD_API.Controllers
 
             return Ok(ApiResponse<object>.Ok(result));
         }
+        [HttpGet("lich-su-thanh-toan-hoa-don/{id}")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> LichThanhToanHoaDonById(int id)
+        {
+
+            var result = from ls in _context.LichSuThanhToans.AsNoTracking()
+                         join cnkh in _context.CongNoKhachHangs.AsNoTracking()
+                          on ls.conNoID equals cnkh.MaDonHang
+                          where cnkh.MaDonHang == id && ls.IsNhaCungCap ==false
+                          select ls;
+
+            if (result == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("123", "Không tìm thấy công nợ"));
+            }
+
+            return Ok(ApiResponse<object>.Ok(result));
+        }
 
         [HttpPost("thanh-toan-hoa-don")]
         public async Task<ActionResult<ApiResponse<object>>> ThanhToanHoaDon(ThanhToanDTO dto)
