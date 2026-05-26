@@ -228,44 +228,44 @@ public class SanPhamsController : ControllerBase
             // =========================
 
 
-            if (tongSoLuongNhap > 0 && sp.SoLuong != soLuongCuaHang)
+            if (tongSoLuongNhap > 0)
             {
                 decimal tongTienNhap = tongSoLuongNhap * giaNhap;
 
-                var phieuNhap = new PhieuNhapKho
-                {
-                    MaNcc = request.MaNccMacDinh,
-                    MaKhoNhap = 1,
-                    MaNguoiLap = request.MaNguoiLap,
-                    NgayNhap = DateTime.UtcNow.AddHours(7),
-                    TongTienNhap = tongTienNhap,
-                    DaThanhToanNcc = 0,
-                    TrangThai = "da_nhap_kho"
-                };
+                //var phieuNhap = new PhieuNhapKho
+                //{
+                //    MaNcc = request.MaNccMacDinh,
+                //    MaKhoNhap = 1,
+                //    MaNguoiLap = request.MaNguoiLap,
+                //    NgayNhap = DateTime.UtcNow.AddHours(7),
+                //    TongTienNhap = tongTienNhap,
+                //    DaThanhToanNcc = 0,
+                //    TrangThai = "da_nhap_kho"
+                //};
 
-                _context.PhieuNhapKhos.Add(phieuNhap);
+                //_context.PhieuNhapKhos.Add(phieuNhap);
 
                 // Flush để lấy MaPhieuNhap
-                await _context.SaveChangesAsync();
+               // await _context.SaveChangesAsync();
 
-                var chiTietPhieuNhaps = new List<ChiTietPhieuNhap>();
+              //  var chiTietPhieuNhaps = new List<ChiTietPhieuNhap>();
 
                 // =========================
                 // NHẬP CỬA HÀNG
                 // =========================
-                if (soLuongCuaHang > 0 && sp.SoLuong != soLuongCuaHang)
-                {
-                    sp.SoLuong = (int)soLuongCuaHang;
+                //if (soLuongCuaHang > 0 && sp.SoLuong != soLuongCuaHang)
+                //{
+                //    sp.SoLuong = (int)soLuongCuaHang;
 
-                    chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
-                    {
-                        MaPhieuNhap = phieuNhap.MaPhieuNhap,
-                        MaSanPham = sp.MaSanPham,
-                        SoLuong = soLuongCuaHang,
-                        GiaNhap = giaNhap,
-                        LoaiNhap = false
-                    });
-                }
+                //    chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
+                //    {
+                //        MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                //        MaSanPham = sp.MaSanPham,
+                //        SoLuong = soLuongCuaHang,
+                //        GiaNhap = giaNhap,
+                //        LoaiNhap = false
+                //    });
+                //}
 
                 // =========================
                 // NHẬP KHO
@@ -291,31 +291,31 @@ public class SanPhamsController : ControllerBase
                     {
                         tonKho.SoLuongTon = soLuongKho;
 
-                        chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
-                        {
-                            MaPhieuNhap = phieuNhap.MaPhieuNhap,
-                            MaSanPham = sp.MaSanPham,
-                            SoLuong = soLuongKho,
-                            GiaNhap = giaNhap,
-                            LoaiNhap = true
-                        });
+                        //chiTietPhieuNhaps.Add(new ChiTietPhieuNhap
+                        //{
+                        //    MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                        //    MaSanPham = sp.MaSanPham,
+                        //    SoLuong = soLuongKho,
+                        //    GiaNhap = giaNhap,
+                        //    LoaiNhap = true
+                        //});
                     }
 
                 }
 
-                _context.ChiTietPhieuNhaps.AddRange(chiTietPhieuNhaps);
+              //  _context.ChiTietPhieuNhaps.AddRange(chiTietPhieuNhaps);
 
                 // =========================
                 // CÔNG NỢ NCC
                 // =========================
-                _context.CongNoNccs.Add(new CongNoNcc
-                {
-                    MaNcc = request.MaNccMacDinh,
-                    MaPhieuNhap = phieuNhap.MaPhieuNhap,
-                    SoTienNo = tongTienNhap,
-                    NgayPhatSinh = DateTime.UtcNow.AddHours(7),
-                    TrangThai = "dang_no"
-                });
+                //_context.CongNoNccs.Add(new CongNoNcc
+                //{
+                //    MaNcc = request.MaNccMacDinh,
+                //    MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                //    SoTienNo = tongTienNhap,
+                //    NgayPhatSinh = DateTime.UtcNow.AddHours(7),
+                //    TrangThai = "dang_no"
+                //});
             }
 
             await _context.SaveChangesAsync();

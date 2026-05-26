@@ -257,7 +257,7 @@ namespace VLXD_API.Controllers
 
                 // nếu bạn thật sự muốn = tồn + đã bán thì:
                 var sp = _context.SanPhams.First(x=>x.MaSanPham==item.MaSanPham);
-                item.TongTonKho = (tonDict.TryGetValue(item.MaSanPham, out var tongTon) ? tongTon : 0) + item.SoLuongDaBan + sp.SoLuong;
+                item.TongTonKho = (tonDict.TryGetValue(item.MaSanPham, out var tongTon) ? tongTon : 0) + item.SoLuongDaBan;
             }
 
             return Ok(ApiResponse<IEnumerable<SanPhamBanChayDto>>.Ok(topProducts));
