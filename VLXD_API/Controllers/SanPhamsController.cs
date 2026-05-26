@@ -85,7 +85,6 @@ public class SanPhamsController : ControllerBase
                 MaNccMacDinh = sp.MaNccMacDinh,
                 MaSku = sp.MaSku,
                 NgayTao = sp.NgayTao,
-                SoLuong = sp.SoLuong,
                 Thue = sp.Thue,
                 TonKhoToiDa = sp.TonKhoToiDa,
                 TonKhoToiThieu = sp.TonKhoToiThieu,
@@ -141,18 +140,6 @@ public class SanPhamsController : ControllerBase
         // 3) Lập danh sách chi tiết theo điều kiện
         var chiTietDons = new List<ChiTietPhieuNhap>();
 
-        if (dto.SoLuong > 0)
-        {
-            chiTietDons.Add(new ChiTietPhieuNhap
-            {
-                SoLuong = dto.SoLuong,
-                MaSanPham = entity.MaSanPham,
-                MaPhieuNhap = null,
-                GiaNhap = (decimal)dto.GiaNhapGanNhat,
-                LoaiNhap = false // Nhập sản phẩm
-            });
-        }
-
         if (dto.TonKhoHienTai > 0)
         {
             await _context.TonKhoChiTiets.AddAsync(new TonKhoChiTiet
@@ -168,8 +155,7 @@ public class SanPhamsController : ControllerBase
                 SoLuong = dto.TonKhoHienTai,
                 MaSanPham = entity.MaSanPham,
                 MaPhieuNhap = null,
-                GiaNhap = (decimal)dto.GiaNhapGanNhat,
-                LoaiNhap = true // Nhập kho
+                GiaNhap = (decimal)dto.GiaNhapGanNhat,// Nhập kho
             });
         }
 
@@ -233,9 +219,8 @@ public class SanPhamsController : ControllerBase
             sp.MaNccMacDinh = ncc.MaNcc;
 
 
-            decimal soLuongCuaHang = request.SoLuong;
             decimal soLuongKho = request.TonKhoHienTai;
-            decimal tongSoLuongNhap = soLuongCuaHang + soLuongKho;
+            decimal tongSoLuongNhap = soLuongKho;
             decimal giaNhap = request.GiaNhapGanNhat ?? 0;
 
             // =========================
