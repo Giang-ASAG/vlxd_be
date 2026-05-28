@@ -79,7 +79,8 @@ public class KhachHangsController : ControllerBase
         {
             return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "KhachHang not found."));
         }
-
+        if(entity.DonHangs.Count>0)
+            return BadRequest();
         _context.KhachHangs.Remove(entity);
         await _context.SaveChangesAsync();
 

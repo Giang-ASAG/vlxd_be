@@ -110,9 +110,51 @@ public class SanPhamsController : ControllerBase
         var dto = _mapper.Map<SanPhamDto>(entity);
         return Ok(ApiResponse<SanPhamDto>.Ok(dto));
     }
-
     [HttpPost]
     public async Task<ActionResult<ApiResponse<string>>> Create(SanPhamTonKhoDto dto)
+    {
+        // Kiểm tra trùng mã SKU
+        var isExist = await _context.SanPhams
+            .AnyAsync(x => x.MaSku == dto.MaSku);
+
+        if (isExist)
+        {
+            return BadRequest(
+                ApiResponse<string>.Fail("FAIL", "Mã SKU đã tồn tại")
+            );
+        }
+
+        // Map dữ liệu sản phẩm
+        var sanPham = _mapper.Map<SanPham>(dto);
+
+        // Không set NCC mặc định khi tạo
+        sanPham.MaNccMacDinh = null;
+
+        // Lưu sản phẩm
+        await _context.SanPhams.AddAsync(sanPham);
+        await _context.SaveChangesAsync();
+
+        // Nếu có tồn kho ban đầu thì tạo tồn kho
+        if (dto.TonKhoHienTai > 0)
+        {
+            var tonKho = new TonKhoChiTiet
+            {
+                MaKho = 1,
+                MaSanPham = sanPham.MaSanPham,
+                SoLuongTon = dto.TonKhoHienTai,
+                ViTriCuThe = "Nhà kho"
+            };
+
+            await _context.TonKhoChiTiets.AddAsync(tonKho);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(
+            ApiResponse<string>.Succes("SUCCESS", "Thêm sản phẩm thành công")
+        );
+    }
+    [HttpPost("/ddd")]
+    public async Task<ActionResult<ApiResponse<string>>> Createsss(SanPhamTonKhoDto dto)
     {
         // 1) Map & lưu SanPham
         if (await _context.SanPhams.AnyAsync(x => x.MaSku == dto.MaSku))
@@ -150,20 +192,20 @@ public class SanPhamsController : ControllerBase
                 ViTriCuThe = "Nha kho"
             });
             await _context.SaveChangesAsync();
-            chiTietDons.Add(new ChiTietPhieuNhap
-            {
-                SoLuong = dto.TonKhoHienTai,
-                MaSanPham = entity.MaSanPham,
-                MaPhieuNhap = null,
-                GiaNhap = (decimal)dto.GiaNhapGanNhat,// Nhập kho
-            });
+            //chiTietDons.Add(new ChiTietPhieuNhap
+            //{
+            //    SoLuong = dto.TonKhoHienTai,
+            //    MaSanPham = entity.MaSanPham,
+            //    MaPhieuNhap = null,
+            //    GiaNhap = (decimal)dto.GiaNhapGanNhat,// Nhập kho
+            //});
         }
 
-        if (!chiTietDons.Any())
-            return BadRequest(ApiResponse<string>.Fail("Fail", "SoLuong và TonKhoHienTai đều <= 0."));
+        //if (!chiTietDons.Any())
+        //    return BadRequest(ApiResponse<string>.Fail("Fail", "SoLuong và TonKhoHienTai đều <= 0."));
 
         // 4) Lưu chi tiết
-        await _context.ChiTietPhieuNhaps.AddRangeAsync(chiTietDons);
+     //   await _context.ChiTietPhieuNhaps.AddRangeAsync(chiTietDons);
 
         await _context.SaveChangesAsync();
 
@@ -189,6 +231,83 @@ public class SanPhamsController : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<string>>> Update(
+    int id,
+    [FromBody] SanPhamTonKhoDto dto)
+    {
+        if (dto == null)
+        {
+            return BadRequest(
+                ApiResponse<string>.Fail("FAIL", "Dữ liệu không hợp lệ")
+            );
+        }
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Tìm sản phẩm
+            var sanPham = await _context.SanPhams
+                .FirstOrDefaultAsync(x => x.MaSanPham == id);
+
+            if (sanPham == null)
+            {
+                return NotFound(
+                    ApiResponse<string>.Fail("FAIL", "Sản phẩm không tồn tại")
+                );
+            }
+
+            // Cập nhật thông tin sản phẩm
+            sanPham.TenSanPham = dto.TenSanPham;
+            sanPham.GiaBanLe = dto.GiaBanLe;
+            sanPham.Thue = dto.Thue;
+            sanPham.GiaSauThue = dto.GiaSauThue;
+            sanPham.MaDanhMuc = dto.MaDanhMuc;
+            sanPham.DonViChinh = dto.DonViChinh;
+            sanPham.MaNccMacDinh = dto.MaNccMacDinh;
+
+            // Cập nhật tồn kho
+            if (dto.TonKhoHienTai > 0)
+            {
+                var tonKho = await _context.TonKhoChiTiets
+                    .FirstOrDefaultAsync(x => x.MaSanPham == id);
+
+                if (tonKho == null)
+                {
+                    tonKho = new TonKhoChiTiet
+                    {
+                        MaKho = 1,
+                        MaSanPham = id,
+                        SoLuongTon = dto.TonKhoHienTai,
+                        ViTriCuThe = "Nhà kho"
+                    };
+
+                    await _context.TonKhoChiTiets.AddAsync(tonKho);
+                }
+                else
+                {
+                    tonKho.SoLuongTon = dto.TonKhoHienTai;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(
+                ApiResponse<string>.Succes("SUCCESS", "Cập nhật sản phẩm thành công")
+            );
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            return BadRequest(
+                ApiResponse<string>.Fail("FAIL", ex.Message)
+            );
+        }
+    }
+
+    [HttpPut("ss{sssid}")]
+    public async Task<ActionResult<ApiResponse<string>>> Updatessss(
     int id,
     [FromBody] SanPhamTonKhoDto request)
     {

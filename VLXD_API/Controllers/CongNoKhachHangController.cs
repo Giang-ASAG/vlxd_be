@@ -83,14 +83,13 @@ namespace VLXD_API.Controllers
         [HttpGet("don-hang/{id}")]
         public async Task<ActionResult<ApiResponse<object>>> GetByDonHang(int id)
         {
-
             var result = await _context.CongNoKhachHangs
-                .FirstOrDefaultAsync(x =>
-                    x.MaDonHang == id);
+                .Where(x => x.MaDonHang == id)
+                .ToListAsync();
 
-            if (result == null)
+            if (result == null || !result.Any())
             {
-                return NotFound(ApiResponse<object>.Fail("123","Không tìm thấy công nợ"));
+                return NotFound(ApiResponse<object>.Fail("123", "Không tìm thấy công nợ"));
             }
 
             return Ok(ApiResponse<object>.Ok(result));
@@ -101,7 +100,7 @@ namespace VLXD_API.Controllers
 
             var result = from ls in _context.LichSuThanhToans.AsNoTracking()
                          join cnkh in _context.CongNoKhachHangs.AsNoTracking()
-                          on ls.conNoID equals cnkh.MaDonHang
+                          on ls.conNoID equals cnkh.Id
                           where cnkh.MaDonHang == id && ls.IsNhaCungCap ==false
                           select ls;
 
@@ -138,9 +137,10 @@ namespace VLXD_API.Controllers
                 
 
             };
-            if (result.SoTienNo <= dto.sotien)
+            if (result.SoTienNo >= dto.sotien)
             {
                 result.SoTienNo = 0;
+                result.TrangThai = "hoan_tat";
                 dh.TrangThaiThanhToan = "da_thanh_toan";
                 dh.SoTienTra += dto.sotien;
                 await _context.SaveChangesAsync();
