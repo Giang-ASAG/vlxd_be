@@ -2,6 +2,6 @@
 {
     public class Meta
     {
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow.AddHours(7);
     }
 }
