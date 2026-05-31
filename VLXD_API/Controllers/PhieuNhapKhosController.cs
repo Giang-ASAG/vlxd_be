@@ -100,14 +100,120 @@ public class PhieuNhapKhosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<PhieuNhapKhoDto>>> Create(PhieuNhapKhoDto dto)
+    public async Task<ActionResult<ApiResponse<string>>> Create(PhieuNhapCreateDto dto)
     {
-        var entity = _mapper.Map<PhieuNhapKho>(dto);
-        _context.PhieuNhapKhos.Add(entity);
-        await _context.SaveChangesAsync();
+        if (dto.ChiTiets == null || !dto.ChiTiets.Any())
+        {
+            return BadRequest(ApiResponse<string>.Fail("FAIL", "Danh sách mặt hàng nhập không được để trống."));
+        }
 
-        var result = _mapper.Map<PhieuNhapKhoDto>(entity);
-        return CreatedAtAction(nameof(GetById), new { id = entity.MaPhieuNhap }, ApiResponse<PhieuNhapKhoDto>.Ok(result));
+        // Sử dụng Transaction để bảo vệ an toàn dữ liệu trên nhiều bảng
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // 1. Tính tổng tiền nhập từ danh sách chi tiết mặt hàng
+            decimal tongTienNhap = 0;
+            foreach (var item in dto.ChiTiets)
+            {
+                tongTienNhap += (decimal)item.SoLuong * item.GiaNhap;
+            }
+
+            // 2. Tạo bản ghi Phiếu Nhập Kho chính
+            var phieuNhap = new PhieuNhapKho
+            {
+                MaNcc = dto.MaNcc,
+                MaKhoNhap = dto.MaKhoNhap,
+                MaNguoiLap = dto.MaNguoiLap,
+                NgayNhap = dto.NgayNhap,
+                TongTienNhap = tongTienNhap,      // Khớp cột tong_tien_nhap
+                DaThanhToanNcc = 0,               // Mặc định ban đầu chưa thanh toán
+                TrangThai = "da_nhap_kho"         // Chuyển thẳng sang trạng thái đã nhập kho
+            };
+
+            await _context.PhieuNhapKhos.AddAsync(phieuNhap);
+            await _context.SaveChangesAsync();    // Lưu trước để sinh tự động ma_phieu_nhap
+
+            // 3. Duyệt danh sách mặt hàng để thêm chi tiết, cập nhật kho, cập nhật NCC sản phẩm
+            foreach (var item in dto.ChiTiets)
+            {
+                // 3.1. Thêm vào bảng chi_tiet_phieu_nhap
+                var chiTiet = new ChiTietPhieuNhap
+                {
+                    MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                    MaSanPham = item.MaSanPham,
+                    SoLuong = (decimal)item.SoLuong,
+                    GiaNhap = item.GiaNhap         // Khớp cột gia_nhap
+                };
+                await _context.ChiTietPhieuNhaps.AddAsync(chiTiet);
+
+                // 3.2. Cập nhật mã nhà cung cấp mặc định cho sản phẩm nếu đang trống (NULL)
+                var sanPham = await _context.SanPhams
+                    .FirstOrDefaultAsync(x => x.MaSanPham == item.MaSanPham);
+
+                if (sanPham != null)
+                {
+                    // Nếu chưa có NCC mặc định, tự động gắn NCC của phiếu nhập hiện tại
+                    if (sanPham.MaNccMacDinh == null)
+                    {
+                        sanPham.MaNccMacDinh = dto.MaNcc;
+                    }
+
+                    // Cập nhật luôn giá nhập gần nhất cho sản phẩm
+                    sanPham.GiaNhapGanNhat = item.GiaNhap;
+
+                    _context.SanPhams.Update(sanPham);
+                }
+
+                // 3.3. Cập nhật cộng dồn số lượng tồn kho (Bảng ton_kho_chi_tiets)
+                var tonKho = await _context.TonKhoChiTiets
+                    .FirstOrDefaultAsync(x => x.MaSanPham == item.MaSanPham && x.MaKho == (dto.MaKhoNhap ?? 1));
+
+                if (tonKho != null)
+                {
+                    tonKho.SoLuongTon += (decimal)item.SoLuong;
+                    _context.TonKhoChiTiets.Update(tonKho);
+                }
+                else
+                {
+                    // Nếu chưa từng tồn tại bản ghi trong kho này thì tạo mới
+                    var moiTonKho = new TonKhoChiTiet
+                    {
+                        MaKho = dto.MaKhoNhap ?? 1,
+                        MaSanPham = item.MaSanPham,
+                        SoLuongTon = (decimal)item.SoLuong,
+                        ViTriCuThe = "Nhà kho"
+                    };
+                    await _context.TonKhoChiTiets.AddAsync(moiTonKho);
+                }
+            }
+
+            // 4. Tạo dữ liệu công nợ nhà cung cấp (Bảng cong_no_ncc)
+            var congNoMoi = new CongNoNcc
+            {
+                MaNcc = dto.MaNcc,
+                MaPhieuNhap = phieuNhap.MaPhieuNhap, // Khớp cột ma_phieu_nhap
+                SoTienNo = tongTienNhap,             // Khớp cột so_tien_no
+                NgayPhatSinh = dto.NgayNhap,         // Khớp cột ngay_phat_sinh
+                TrangThai = "dang_no"                // Khớp giá trị enum 'dang_no'
+            };
+
+            await _context.CongNoNccs.AddAsync(congNoMoi);
+
+            // 5. Đồng bộ tất cả lệnh thay đổi xuống MySQL
+            await _context.SaveChangesAsync();
+
+            // Xác nhận hoàn thành Transaction thành công hoàn toàn
+            await transaction.CommitAsync();
+
+            return Ok(ApiResponse<string>.Succes("SUCCESS", "Nhập hàng, cập nhật NCC sản phẩm và tạo công nợ thành công!"));
+        }
+        catch (Exception ex)
+        {
+            // Rollback toàn bộ dữ liệu nếu có bất cứ dòng lệnh nào bị lỗi giữa chừng
+            await transaction.RollbackAsync();
+            return StatusCode(500, ApiResponse<string>.Fail("ERROR", $"Lỗi hệ thống: {ex.Message}"));
+        }
     }
 
     [HttpPut("{id}")]
