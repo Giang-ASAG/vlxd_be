@@ -101,6 +101,7 @@ public class DonHangsController : ControllerBase
             donHang.TrangThaiThanhToan = donHang.SoTienTra <= 0 ? "chua_thanh_toan" :
                                          donHang.SoTienTra >= donHang.TongTien ? "da_thanh_toan" :
                                                                            "thanh_toan_mot_phan";
+            
             if (request.DonHang.MaKhachHang <= 0)
                 donHang.MaKhachHang = null;
             else
@@ -114,7 +115,7 @@ public class DonHangsController : ControllerBase
             {
                 var sanPham = _context.SanPhams.First(x => x.MaSanPham == item.MaSanPham);
                 item.MaDonHang = donHang.MaDonHang;
-                item.DonGia = (decimal)sanPham.GiaBanLe;
+               // item.DonGia = (decimal)sanPham.GiaBanLe;
                 //if (sanPham.SoLuong > item.SoLuong)
                 //{
                 //    sanPham.SoLuong -= (int)item.SoLuong;
