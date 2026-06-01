@@ -7,7 +7,7 @@ using VLXD_API.Common;
 using VLXD_API.DTOs.KhachHang;
 using VLXD_API.DTOs.SanPham;
 using VLXD_API.Models;
-using VLXD_API.Models;
+
 
 namespace VLXD_API.Controllers;
 
@@ -264,31 +264,28 @@ public class SanPhamsController : ControllerBase
             sanPham.MaDanhMuc = dto.MaDanhMuc;
             sanPham.DonViChinh = dto.DonViChinh;
             sanPham.MaNccMacDinh = dto.MaNccMacDinh;
+            sanPham.GiaNhapGanNhat = dto.GiaNhapGanNhat;
 
             // Cập nhật tồn kho
-            if (dto.TonKhoHienTai > 0)
+            var tonKho = await _context.TonKhoChiTiets
+                .FirstOrDefaultAsync(x => x.MaSanPham == id);
+
+            if (tonKho == null)
             {
-                var tonKho = await _context.TonKhoChiTiets
-                    .FirstOrDefaultAsync(x => x.MaSanPham == id);
-
-                if (tonKho == null)
+                tonKho = new TonKhoChiTiet
                 {
-                    tonKho = new TonKhoChiTiet
-                    {
-                        MaKho = 1,
-                        MaSanPham = id,
-                        SoLuongTon = dto.TonKhoHienTai,
-                        ViTriCuThe = "Nhà kho"
-                    };
+                    MaKho = 1,
+                    MaSanPham = id,
+                    SoLuongTon = dto.TonKhoHienTai,
+                    ViTriCuThe = "Nhà kho"
+                };
 
-                    await _context.TonKhoChiTiets.AddAsync(tonKho);
-                }
-                else
-                {
-                    tonKho.SoLuongTon = dto.TonKhoHienTai;
-                }
+                await _context.TonKhoChiTiets.AddAsync(tonKho);
             }
-
+            else
+            {
+                tonKho.SoLuongTon = dto.TonKhoHienTai;
+            }
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 

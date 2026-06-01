@@ -129,9 +129,9 @@ public class DonHangsController : ControllerBase
                     //{
                     //    throw new Exception($"Sản phẩm {sanPham.MaSanPham} không đủ hàng");
                     //}
-                    //slton.SoLuongTon -= slhientai;
-                    //sanPham.SoLuong = 0;
-                    PhieuXuatKhoDto xuatKhoDto = new PhieuXuatKhoDto
+                    slton.SoLuongTon -= item.SoLuong;
+                //sanPham.SoLuong = 0;
+                PhieuXuatKhoDto xuatKhoDto = new PhieuXuatKhoDto
                     {
                         MaDonHang = donHang.MaDonHang,
                         MaKhoXuat = 1,
