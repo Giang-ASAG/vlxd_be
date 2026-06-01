@@ -31,9 +31,12 @@ public partial class PhieuNhapKho
     [Column("tong_tien_nhap")]
     [Precision(18, 2)]
     public decimal? TongTienNhap { get; set; }
+    [Column("ghi_chu")]
 
+    public string? GhiChu { get; set; }
     [Column("da_thanh_toan_ncc")]
     [Precision(18, 2)]
+
     public decimal? DaThanhToanNcc { get; set; }
 
     [Column("trang_thai", TypeName = "enum('cho_nhap','da_nhap_kho','da_huy')")]

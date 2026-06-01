@@ -199,6 +199,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.NgayNhap).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.TongTienNhap).HasDefaultValueSql("'0.00'");
             entity.Property(e => e.TrangThai).HasDefaultValueSql("'cho_nhap'");
+            entity.Property(e => e.GhiChu).HasColumnName("ghi_chu");
 
             entity.HasOne(d => d.MaKhoNhapNavigation).WithMany(p => p.PhieuNhapKhos).HasConstraintName("fk_pnk_kho");
 
