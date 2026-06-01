@@ -48,7 +48,7 @@ public class PhieuNhapKhosController : ControllerBase
                     TongTienNhap = temp.pn.TongTienNhap,
                     DaThanhToanNcc = temp.pn.DaThanhToanNcc,
                     TrangThai = temp.pn.TrangThai,
-
+                    GhiChu = temp.pn.GhiChu,
                     TenKho = temp.kho.TenKho,
                     TenNcc = temp.ncc.TenNcc,
                     TenNgLap = nd.HoTen
