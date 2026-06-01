@@ -13,6 +13,7 @@ public class PhieuNhapKhoDto
     public decimal? TongTienNhap { get; set; }
     public decimal? DaThanhToanNcc { get; set; }
     public string? TrangThai { get; set; }
+    public string? GhiChu { get; set; }
 }
 
 

@@ -107,110 +107,132 @@ public class PhieuNhapKhosController : ControllerBase
             return BadRequest(ApiResponse<string>.Fail("FAIL", "Danh sách mặt hàng nhập không được để trống."));
         }
 
-        // Sử dụng Transaction để bảo vệ an toàn dữ liệu trên nhiều bảng
+        // Mở Transaction bảo vệ toàn vẹn dữ liệu
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            // 1. Tính tổng tiền nhập từ danh sách chi tiết mặt hàng
+            // 1. Tính toán tổng tiền nhập hàng
             decimal tongTienNhap = 0;
             foreach (var item in dto.ChiTiets)
             {
-                tongTienNhap += (decimal)item.SoLuong * item.GiaNhap;
+                tongTienNhap += item.SoLuong * item.GiaNhap;
             }
 
-            // 2. Tạo bản ghi Phiếu Nhập Kho chính
+            // Giới hạn số tiền thực nhận không vượt quá tổng hóa đơn để tránh sai lệch kế toán
+            decimal soTienThanhToanThucTe = dto.SoTienThanhToanNgay > tongTienNhap
+                ? tongTienNhap
+                : dto.SoTienThanhToanNgay;
+
+            // 2. Thêm mới bản ghi vào bảng phieu_nhap_kho
             var phieuNhap = new PhieuNhapKho
             {
                 MaNcc = dto.MaNcc,
-                MaKhoNhap = dto.MaKhoNhap,
+                MaKhoNhap = dto.MaKhoNhap ?? 1,
                 MaNguoiLap = dto.MaNguoiLap,
                 NgayNhap = dto.NgayNhap,
-                TongTienNhap = tongTienNhap,      // Khớp cột tong_tien_nhap
-                DaThanhToanNcc = 0,               // Mặc định ban đầu chưa thanh toán
-                TrangThai = "da_nhap_kho"         // Chuyển thẳng sang trạng thái đã nhập kho
+                TongTienNhap = tongTienNhap,
+                DaThanhToanNcc = soTienThanhToanThucTe, // Cập nhật số tiền đã trả ngay vào phiếu nhập
+                TrangThai = "da_nhap_kho",
+                GhiChu = dto.GhiChu
             };
 
             await _context.PhieuNhapKhos.AddAsync(phieuNhap);
-            await _context.SaveChangesAsync();    // Lưu trước để sinh tự động ma_phieu_nhap
+            await _context.SaveChangesAsync(); // Lưu để sinh tự động ma_phieu_nhap
 
-            // 3. Duyệt danh sách mặt hàng để thêm chi tiết, cập nhật kho, cập nhật NCC sản phẩm
+            // 3. Xử lý chi tiết mặt hàng, đồng bộ kho và nhà cung cấp
             foreach (var item in dto.ChiTiets)
             {
-                // 3.1. Thêm vào bảng chi_tiet_phieu_nhap
+                // 3.1. Thêm mới chi_tiet_phieu_nhap
                 var chiTiet = new ChiTietPhieuNhap
                 {
                     MaPhieuNhap = phieuNhap.MaPhieuNhap,
                     MaSanPham = item.MaSanPham,
-                    SoLuong = (decimal)item.SoLuong,
-                    GiaNhap = item.GiaNhap         // Khớp cột gia_nhap
+                    SoLuong = item.SoLuong,
+                    GiaNhap = item.GiaNhap,// Mặc định hàng nhập mới thông thường
                 };
                 await _context.ChiTietPhieuNhaps.AddAsync(chiTiet);
 
-                // 3.2. Cập nhật mã nhà cung cấp mặc định cho sản phẩm nếu đang trống (NULL)
+                // 3.2. Đồng bộ gắn Nhà cung cấp mặc định nếu đang trống (NULL)
                 var sanPham = await _context.SanPhams
                     .FirstOrDefaultAsync(x => x.MaSanPham == item.MaSanPham);
 
                 if (sanPham != null)
                 {
-                    // Nếu chưa có NCC mặc định, tự động gắn NCC của phiếu nhập hiện tại
                     if (sanPham.MaNccMacDinh == null)
                     {
                         sanPham.MaNccMacDinh = dto.MaNcc;
                     }
-
-                    // Cập nhật luôn giá nhập gần nhất cho sản phẩm
                     sanPham.GiaNhapGanNhat = item.GiaNhap;
-
                     _context.SanPhams.Update(sanPham);
                 }
 
-                // 3.3. Cập nhật cộng dồn số lượng tồn kho (Bảng ton_kho_chi_tiets)
+                // 3.3. Cộng dồn số lượng vào bảng ton_kho_chi_tiet
                 var tonKho = await _context.TonKhoChiTiets
-                    .FirstOrDefaultAsync(x => x.MaSanPham == item.MaSanPham && x.MaKho == (dto.MaKhoNhap ?? 1));
+                    .FirstOrDefaultAsync(x => x.MaSanPham == item.MaSanPham && x.MaKho == phieuNhap.MaKhoNhap);
 
                 if (tonKho != null)
                 {
-                    tonKho.SoLuongTon += (decimal)item.SoLuong;
+                    tonKho.SoLuongTon += item.SoLuong;
                     _context.TonKhoChiTiets.Update(tonKho);
                 }
                 else
                 {
-                    // Nếu chưa từng tồn tại bản ghi trong kho này thì tạo mới
                     var moiTonKho = new TonKhoChiTiet
                     {
-                        MaKho = dto.MaKhoNhap ?? 1,
+                        MaKho = phieuNhap.MaKhoNhap ?? 1,
                         MaSanPham = item.MaSanPham,
-                        SoLuongTon = (decimal)item.SoLuong,
+                        SoLuongTon = item.SoLuong,
                         ViTriCuThe = "Nhà kho"
                     };
                     await _context.TonKhoChiTiets.AddAsync(moiTonKho);
                 }
             }
 
-            // 4. Tạo dữ liệu công nợ nhà cung cấp (Bảng cong_no_ncc)
+            // 4. Xử lý logic Công nợ (Bảng cong_no_ncc)
+            decimal soTienNoConLai = tongTienNhap - soTienThanhToanThucTe;
+            string trangThaiCongNo = soTienNoConLai == 0 ? "hoan_tat" : "dang_no";
+
             var congNoMoi = new CongNoNcc
             {
                 MaNcc = dto.MaNcc,
-                MaPhieuNhap = phieuNhap.MaPhieuNhap, // Khớp cột ma_phieu_nhap
-                SoTienNo = tongTienNhap,             // Khớp cột so_tien_no
-                NgayPhatSinh = dto.NgayNhap,         // Khớp cột ngay_phat_sinh
-                TrangThai = "dang_no"                // Khớp giá trị enum 'dang_no'
+                MaPhieuNhap = phieuNhap.MaPhieuNhap,
+                SoTienNo = soTienNoConLai, // Số tiền còn nợ (0 hoặc khoản chênh lệch)
+                NgayPhatSinh = dto.NgayNhap,
+                TrangThai = trangThaiCongNo
             };
 
             await _context.CongNoNccs.AddAsync(congNoMoi);
+            await _context.SaveChangesAsync(); // Lưu để sinh tự động id của công nợ làm khóa ngoại cho lịch sử thanh toán
 
-            // 5. Đồng bộ tất cả lệnh thay đổi xuống MySQL
+            // 5. Xử lý Lịch sử thanh toán (Bảng lichsuthanhtoan) nếu có phát sinh giao dịch tiền lẻ/tiền mặt
+            if (soTienThanhToanThucTe > 0)
+            {
+                var lichSu = new LichSuThanhToan
+                {
+                    IsNhaCungCap = true,                   // Luôn luôn là true theo yêu cầu nhập hàng NCC
+                    conNoID = congNoMoi.Id,                // Lấy ID tự sinh từ bảng công nợ vừa tạo phía trên
+                    SoTien = soTienThanhToanThucTe,
+                    PhuongThucThanhToan = true,               // Mặc định 1: Chuyển khoản hoặc bạn tự ánh xạ từ client
+                    NgayThanhToan = dto.NgayNhap,
+                    GhiChu = soTienNoConLai == 0
+                        ? $"Thanh toán hoàn tất toàn bộ hóa đơn nhập kho #{phieuNhap.MaPhieuNhap}"
+                        : $"Thanh toán một phần hóa đơn nhập kho #{phieuNhap.MaPhieuNhap}"
+                };
+                await _context.LichSuThanhToans.AddAsync(lichSu);
+            }
+
+            // 6. Đồng bộ toàn bộ dữ liệu xuống database
             await _context.SaveChangesAsync();
 
-            // Xác nhận hoàn thành Transaction thành công hoàn toàn
+            // Commit Transaction thành công mỹ mãn
             await transaction.CommitAsync();
 
-            return Ok(ApiResponse<string>.Succes("SUCCESS", "Nhập hàng, cập nhật NCC sản phẩm và tạo công nợ thành công!"));
+            return Ok(ApiResponse<string>.Succes("SUCCESS", "Xử lý phiếu nhập, cập nhật dữ liệu kho, nhà cung cấp và hoạch toán công nợ thành công!"));
         }
         catch (Exception ex)
         {
-            // Rollback toàn bộ dữ liệu nếu có bất cứ dòng lệnh nào bị lỗi giữa chừng
+            // Thu hồi dữ liệu ngay lập tức nếu bất kỳ bước nào xảy ra ngoại lệ
             await transaction.RollbackAsync();
             return StatusCode(500, ApiResponse<string>.Fail("ERROR", $"Lỗi hệ thống: {ex.Message}"));
         }
