@@ -13,6 +13,10 @@ namespace VLXD_API
     {
         public static void Main(string[] args)
         {
+                        Environment.SetEnvironmentVariable(
+                "DOTNET_USE_POLLING_FILE_WATCHER",
+                "1"
+            );
             // Tắt reloadOnChange để tránh FileSystemWatcher trên Render
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
